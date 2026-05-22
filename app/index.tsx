@@ -1,0 +1,246 @@
+import {useState} from "react";
+import {Text, TextInput, TouchableOpacity, View, ScrollView} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import Header from "@/components/Header";
+import {MaterialIcons} from "@expo/vector-icons";
+import CustomModal from "@/components/CustomModal";
+import GameStats from "@/components/GameStats";
+import FlightDisplayScreen, {type FlightDisplayState} from "@/components/FlightDisplayScreen";
+
+
+const Index = () => {
+    const [showAutoplayModal, setShowAutoplayModal] = useState(false);
+    const [flightStatus, setFlightStatus] = useState<FlightDisplayState>('idle');
+    const [flightRunId, setFlightRunId] = useState(0);
+
+    const handleStartPlane = () => {
+        setFlightStatus('flying');
+        setFlightRunId((currentRunId) => currentRunId + 1);
+    };
+
+    const handlePlaceAutobet = (betData: any) => {
+        console.log('Autobet placed:', betData);
+        // Handle the autobet logic here
+        // Example: call your API, update state, etc.
+    };
+
+    return (
+        <SafeAreaView className="flex-1">
+            <Header/>
+
+
+            {/*Animating flying plane section*/}
+            <FlightDisplayScreen status={flightStatus} runId={flightRunId}/>
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+
+            >
+
+                {/*This will be temporal component to test out the 3 states of the plane. It will be removed when we start the backend implementation*/}
+                <View className="p-4 bg-gray-400 items-center justify-between flex-row">
+                    <TouchableOpacity onPress={handleStartPlane}>
+                        <Text>Start</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => setFlightStatus('idle')}>
+                        <Text>Stop</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => setFlightStatus('exploded')}>
+                        <Text>Explode</Text>
+                    </TouchableOpacity>
+                </View>
+
+
+                {/*Place a bet section*/}
+                <View className="w-full mt-2 p-1 gap-3">
+
+                    <View className="w-full flex-row gap-2 rounded-md bg-neutral-300 p-2">
+
+                        {/* LEFT SIDE */}
+                        <View className="flex-1 gap-2">
+
+                            {/* INPUT */}
+                            <View className="flex-row items-center rounded-md bg-[#e9edf5] px-3 py-1">
+                                <TextInput
+                                    placeholder="10"
+                                    keyboardType="numeric"
+                                    className="flex-1 text-gray-700 font-semibold"
+                                    placeholderTextColor="#374151"
+                                />
+
+                                <TouchableOpacity>
+                                    <MaterialIcons name="close" size={18} color="#374151"/>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* QUICK AMOUNTS */}
+                            <View className="gap-2">
+
+                                <View className="flex-row gap-2">
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">10</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">50</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">100</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View className="flex-row gap-2">
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">200</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">500</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">1000</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                            </View>
+                        </View>
+
+                        {/* RIGHT SIDE */}
+                        <View className="w-[120px] gap-2">
+
+                            {/* AUTOPLAY */}
+                            <TouchableOpacity
+                                onPress={() => setShowAutoplayModal(true)}
+                                className="py-[14.5px] rounded-md border border-blue-500 items-center justify-center">
+                                <Text
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                    className="text-blue-500 font-bold text-[11px]"
+                                >
+                                    ENABLE AUTOPLAY
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* PLACE BET */}
+                            <TouchableOpacity
+                                className="flex-1 rounded-md bg-blue-500 items-center justify-center px-2">
+                                <Text className="text-white font-bold text-base">
+                                    PLACE A BET
+                                </Text>
+
+                                {/*<Text className="text-white text-[10px] opacity-80">
+                            on the next round
+                        </Text>*/}
+                            </TouchableOpacity>
+
+                        </View>
+
+                    </View>
+
+                    <View className="w-full flex-row gap-2 rounded-md bg-neutral-300 p-2">
+
+                        {/* LEFT SIDE */}
+                        <View className="flex-1 gap-2">
+
+                            {/* INPUT */}
+                            <View className="flex-row items-center rounded-md bg-[#e9edf5] px-3 py-1">
+                                <TextInput
+                                    placeholder="10"
+                                    keyboardType="numeric"
+                                    className="flex-1 text-gray-700 font-semibold"
+                                    placeholderTextColor="#374151"
+                                />
+
+                                <TouchableOpacity>
+                                    <MaterialIcons name="close" size={18} color="#374151"/>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* QUICK AMOUNTS */}
+                            <View className="gap-2">
+
+                                <View className="flex-row gap-2">
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">10</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">50</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">100</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View className="flex-row gap-2">
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">200</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">500</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
+                                        <Text className="text-white font-semibold">1000</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                            </View>
+                        </View>
+
+                        {/* RIGHT SIDE */}
+                        <View className="w-[120px] gap-2">
+
+                            {/* AUTOPLAY */}
+                            <TouchableOpacity
+                                onPress={() => setShowAutoplayModal(true)}
+                                className="py-[14.5px] rounded-md border border-blue-500 items-center justify-center">
+                                <Text
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                    className="text-blue-500 font-bold text-[11px]"
+                                >
+                                    ENABLE AUTOPLAY
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* PLACE BET */}
+                            <TouchableOpacity
+                                className="flex-1 rounded-md bg-blue-500 items-center justify-center px-2">
+                                <Text className="text-white font-bold text-base">
+                                    PLACE A BET
+                                </Text>
+
+                                {/*<Text className="text-white text-[10px] opacity-80">
+                            on the next round
+                        </Text>*/}
+                            </TouchableOpacity>
+
+                        </View>
+
+                    </View>
+
+                </View>
+
+                {/* Log of Total Bets, Wins & Losses */}
+                <GameStats/>
+
+            </ScrollView>
+
+            <CustomModal
+                visible={showAutoplayModal}
+                onClose={() => setShowAutoplayModal(false)}
+                onPlaceBet={handlePlaceAutobet}
+            />
+
+        </SafeAreaView>
+    );
+};
+
+export default Index;
