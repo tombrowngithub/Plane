@@ -131,7 +131,7 @@ const FlightDisplayScreen = ({
     });
 
     return (
-        <View className="w-full h-[200px] mt-4 overflow-hidden bg-neutral-300 ">
+        <View className="w-full h-[200px] mt-4 overflow-hidden bg-sky-100 ">
             <Animated.View
                 style={[
                     {

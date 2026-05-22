@@ -11,7 +11,7 @@ const Header = () => {
         <View className="w-full px-3">
 
             <View className="flex-row items-center justify-between py-2">
-                <Text className="text-gray-600 border-2 py-1 px-3 rounded-lg border-blue-500 font-semibold">Balance:
+                <Text className="text-slate-800 border-2 py-1 px-3 rounded-lg border-sky-600 bg-white font-semibold">Balance:
                     ${balance.toLocaleString()}</Text>
 
                 <Image
@@ -20,7 +20,7 @@ const Header = () => {
                     source={require("../assets/images/JetplaneLogo.png")}/>
 
                 <TouchableOpacity>
-                    <MaterialIcons name="menu" size={30} color="black"/>
+                    <MaterialIcons name="menu" size={30} color="#0F172A"/>
                 </TouchableOpacity>
             </View>
 
@@ -28,7 +28,7 @@ const Header = () => {
                 <FlatList
                     data={crashHistory}
                     renderItem={({item}) => (
-                        <Text className="bg-gray-300 mr-2 p-2 rounded-lg text-sm shadow">{item}x</Text>
+                        <Text className="bg-slate-100 text-slate-700 mr-2 p-2 rounded-lg text-sm shadow">{item}x</Text>
                     )}
                     horizontal
                     showsHorizontalScrollIndicator={false}

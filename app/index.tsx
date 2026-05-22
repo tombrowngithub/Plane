@@ -25,7 +25,7 @@ const Index = () => {
     };
 
     return (
-        <SafeAreaView className="flex-1">
+        <SafeAreaView className="flex-1 bg-slate-50">
             <Header/>
 
 
@@ -56,22 +56,22 @@ const Index = () => {
                 {/*Place a bet section*/}
                 <View className="w-full mt-2 p-1 gap-3">
 
-                    <View className="w-full flex-row gap-2 rounded-md bg-neutral-300 p-2">
+                    <View className="w-full flex-row gap-2 rounded-md bg-slate-200 p-2">
 
                         {/* LEFT SIDE */}
                         <View className="flex-1 gap-2">
 
                             {/* INPUT */}
-                            <View className="flex-row items-center rounded-md bg-[#e9edf5] px-3 py-1">
+                            <View className="flex-row items-center rounded-md bg-white px-3 py-1">
                                 <TextInput
                                     placeholder="10"
                                     keyboardType="numeric"
-                                    className="flex-1 text-gray-700 font-semibold"
-                                    placeholderTextColor="#374151"
+                                    className="flex-1 text-slate-800 font-semibold"
+                                    placeholderTextColor="#64748B"
                                 />
 
                                 <TouchableOpacity>
-                                    <MaterialIcons name="close" size={18} color="#374151"/>
+                                    <MaterialIcons name="close" size={18} color="#64748B"/>
                                 </TouchableOpacity>
                             </View>
 
@@ -79,30 +79,30 @@ const Index = () => {
                             <View className="gap-2">
 
                                 <View className="flex-row gap-2">
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">10</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">10</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">50</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">50</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">100</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">100</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 <View className="flex-row gap-2">
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">200</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">200</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">500</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">500</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">1000</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">1000</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -115,11 +115,11 @@ const Index = () => {
                             {/* AUTOPLAY */}
                             <TouchableOpacity
                                 onPress={() => setShowAutoplayModal(true)}
-                                className="py-[14.5px] rounded-md border border-blue-500 items-center justify-center">
+                                className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center">
                                 <Text
                                     numberOfLines={1}
                                     adjustsFontSizeToFit
-                                    className="text-blue-500 font-bold text-[11px]"
+                                    className="text-sky-700 font-bold text-[11px]"
                                 >
                                     ENABLE AUTOPLAY
                                 </Text>
@@ -127,7 +127,7 @@ const Index = () => {
 
                             {/* PLACE BET */}
                             <TouchableOpacity
-                                className="flex-1 rounded-md bg-blue-500 items-center justify-center px-2">
+                                className="flex-1 rounded-md bg-sky-600 items-center justify-center px-2">
                                 <Text className="text-white font-bold text-base">
                                     PLACE A BET
                                 </Text>
@@ -141,22 +141,22 @@ const Index = () => {
 
                     </View>
 
-                    <View className="w-full flex-row gap-2 rounded-md bg-neutral-300 p-2">
+                    <View className="w-full flex-row gap-2 rounded-md bg-slate-200 p-2">
 
                         {/* LEFT SIDE */}
                         <View className="flex-1 gap-2">
 
                             {/* INPUT */}
-                            <View className="flex-row items-center rounded-md bg-[#e9edf5] px-3 py-1">
+                            <View className="flex-row items-center rounded-md bg-white px-3 py-1">
                                 <TextInput
                                     placeholder="10"
                                     keyboardType="numeric"
-                                    className="flex-1 text-gray-700 font-semibold"
-                                    placeholderTextColor="#374151"
+                                    className="flex-1 text-slate-800 font-semibold"
+                                    placeholderTextColor="#64748B"
                                 />
 
                                 <TouchableOpacity>
-                                    <MaterialIcons name="close" size={18} color="#374151"/>
+                                    <MaterialIcons name="close" size={18} color="#64748B"/>
                                 </TouchableOpacity>
                             </View>
 
@@ -164,30 +164,30 @@ const Index = () => {
                             <View className="gap-2">
 
                                 <View className="flex-row gap-2">
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">10</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">10</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">50</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">50</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">100</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">100</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 <View className="flex-row gap-2">
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">200</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">200</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">500</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">500</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity className="flex-1 rounded py-2 bg-neutral-400 items-center">
-                                        <Text className="text-white font-semibold">1000</Text>
+                                    <TouchableOpacity className="flex-1 rounded py-2 bg-slate-100 items-center">
+                                        <Text className="text-slate-700 font-semibold">1000</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -200,11 +200,11 @@ const Index = () => {
                             {/* AUTOPLAY */}
                             <TouchableOpacity
                                 onPress={() => setShowAutoplayModal(true)}
-                                className="py-[14.5px] rounded-md border border-blue-500 items-center justify-center">
+                                className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center">
                                 <Text
                                     numberOfLines={1}
                                     adjustsFontSizeToFit
-                                    className="text-blue-500 font-bold text-[11px]"
+                                    className="text-sky-700 font-bold text-[11px]"
                                 >
                                     ENABLE AUTOPLAY
                                 </Text>
@@ -212,7 +212,7 @@ const Index = () => {
 
                             {/* PLACE BET */}
                             <TouchableOpacity
-                                className="flex-1 rounded-md bg-blue-500 items-center justify-center px-2">
+                                className="flex-1 rounded-md bg-sky-600 items-center justify-center px-2">
                                 <Text className="text-white font-bold text-base">
                                     PLACE A BET
                                 </Text>
