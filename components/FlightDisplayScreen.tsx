@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Dimensions, View} from 'react-native';
+import {Dimensions, View, Text} from 'react-native';
 import {Image} from 'expo-image';
 
 import Animated, {
@@ -131,7 +131,7 @@ const FlightDisplayScreen = ({
     });
 
     return (
-        <View className="w-full h-[200px] mt-4 overflow-hidden bg-sky-100 ">
+        <View className="w-full h-[200px] mt-4 overflow-hidden bg-sky-100 relative">
             <Animated.View
                 style={[
                     {
@@ -175,6 +175,10 @@ const FlightDisplayScreen = ({
                 />
             </Animated.View>
 
+            {/*Time counter and odds display*/}
+            <View className="w-28 h-28 bg-slate-500/50 rounded-full right-0 bottom-0 items-center justify-center absolute">
+                <Text className="text-4xl font-bold">4</Text>
+            </View>
         </View>
     );
 };

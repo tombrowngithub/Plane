@@ -6,12 +6,14 @@ import {MaterialIcons} from "@expo/vector-icons";
 import CustomModal from "@/components/CustomModal";
 import GameStats from "@/components/GameStats";
 import FlightDisplayScreen, {type FlightDisplayState} from "@/components/FlightDisplayScreen";
+import SideBar from "@/components/SideBar";
 
 
 const Index = () => {
     const [showAutoplayModal, setShowAutoplayModal] = useState(false);
     const [flightStatus, setFlightStatus] = useState<FlightDisplayState>('idle');
     const [flightRunId, setFlightRunId] = useState(0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleStartPlane = () => {
         setFlightStatus('flying');
@@ -26,8 +28,13 @@ const Index = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-slate-50">
-            <Header/>
 
+            <Header onMenuPress={() => setIsSidebarOpen(true)} />
+
+            <SideBar
+                visible={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+            />
 
             {/*Animating flying plane section*/}
             <FlightDisplayScreen status={flightStatus} runId={flightRunId}/>
@@ -218,8 +225,8 @@ const Index = () => {
                                 </Text>
 
                                 {/*<Text className="text-white text-[10px] opacity-80">
-                            on the next round
-                        </Text>*/}
+                                        on the next round // this will show when the game round has started already
+                                  </Text>*/}
                             </TouchableOpacity>
 
                         </View>
