@@ -1,24 +1,90 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Text, TextInput, TouchableOpacity, View, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Header from "@/components/Header";
 import {MaterialIcons} from "@expo/vector-icons";
 import CustomModal from "@/components/CustomModal";
 import GameStats from "@/components/GameStats";
-import FlightDisplayScreen, {type FlightDisplayState} from "@/components/FlightDisplayScreen";
+import FlightDisplayScreen from "@/components/FlightDisplayScreen";
 import SideBar from "@/components/SideBar";
+import {GameState} from "@/types/game";
+import {socket} from '@/services/socket';
 
 
 const Index = () => {
     const [showAutoplayModal, setShowAutoplayModal] = useState(false);
-    const [flightStatus, setFlightStatus] = useState<FlightDisplayState>('idle');
-    const [flightRunId, setFlightRunId] = useState(0);
+    /*const [flightStatus, setFlightStatus] = useState<FlightDisplayState>('idle');
+    const [flightRunId, setFlightRunId] = useState(0);*/
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const handleStartPlane = () => {
+    const [gameState, setGameState] = useState<GameState>({
+        multiplier: 1,
+        status: 'waiting',
+        countdown: null,
+        crashPoint: null,
+        cashoutMultiplier: null,
+    });
+
+    /*const handleStartPlane = () => {
         setFlightStatus('flying');
         setFlightRunId((currentRunId) => currentRunId + 1);
-    };
+    };*/
+
+    useEffect(() => {
+
+        socket.on('update', (data) => {
+
+            const multiplier = parseFloat(data.multiplier);
+
+            setGameState(prev => ({
+                ...prev,
+                multiplier,
+                status: 'playing',
+            }));
+        });
+
+        socket.on('crash', (data) => {
+
+            const crashPoint = parseFloat(data.crashPoint);
+
+            setGameState(prev => ({
+                ...prev,
+                multiplier: crashPoint,
+                status: 'crashed',
+                crashPoint,
+            }));
+        });
+
+        socket.on('cashedOut', (data) => {
+
+            const cashoutMultiplier = parseFloat(data.multiplier);
+
+            setGameState(prev => ({
+                ...prev,
+                status: 'cashed',
+                cashoutMultiplier,
+            }));
+        });
+
+        socket.on('countdown', (data) => {
+
+            setGameState({
+                multiplier: 1,
+                status: 'waiting',
+                countdown: data.countdown,
+                crashPoint: null,
+                cashoutMultiplier: null,
+            });
+        });
+
+        return () => {
+            socket.off('update');
+            socket.off('crash');
+            socket.off('cashedOut');
+            socket.off('countdown');
+        };
+
+    }, []);
 
     const handlePlaceAutobet = (betData: any) => {
         console.log('Autobet placed:', betData);
@@ -37,7 +103,11 @@ const Index = () => {
             />
 
             {/*Animating flying plane section*/}
-            <FlightDisplayScreen status={flightStatus} runId={flightRunId}/>
+            <FlightDisplayScreen
+                multiplier={gameState.multiplier}
+                status={gameState.status}
+                countdown={gameState.countdown}
+            />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -45,7 +115,7 @@ const Index = () => {
             >
 
                 {/*This will be temporal component to test out the 3 states of the plane. It will be removed when we start the backend implementation*/}
-                <View className="p-4 bg-gray-400 items-center justify-between flex-row">
+                {/*<View className="p-4 bg-gray-400 items-center justify-between flex-row">
                     <TouchableOpacity onPress={handleStartPlane}>
                         <Text>Start</Text>
                     </TouchableOpacity>
@@ -57,7 +127,7 @@ const Index = () => {
                     <TouchableOpacity onPress={() => setFlightStatus('exploded')}>
                         <Text>Explode</Text>
                     </TouchableOpacity>
-                </View>
+                </View>*/}
 
 
                 {/*Place a bet section*/}
@@ -132,7 +202,7 @@ const Index = () => {
                                 </Text>
                             </TouchableOpacity>
 
-                            {/* PLACE BET */}
+                            {/* PLACE BET {/*Placebet would dynamically serve as cashout button if the user placed a bet and it running* */}
                             <TouchableOpacity
                                 className="flex-1 rounded-md bg-sky-600 items-center justify-center px-2">
                                 <Text className="text-white font-bold text-base">
@@ -217,7 +287,7 @@ const Index = () => {
                                 </Text>
                             </TouchableOpacity>
 
-                            {/* PLACE BET */}
+                            {/* PLACE BET {/*Placebet would dynamically serve as cashout button if the user placed a bet and it running* */}
                             <TouchableOpacity
                                 className="flex-1 rounded-md bg-sky-600 items-center justify-center px-2">
                                 <Text className="text-white font-bold text-base">

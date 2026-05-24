@@ -31,25 +31,57 @@ const PLANE_IMAGES = {
     exploded: require('../assets/images/planeExplodes.png'),
 };
 
-export type FlightDisplayState = keyof typeof PLANE_IMAGES;
 
 type FlightDisplayScreenProps = {
-    status?: FlightDisplayState;
-    runId?: number;
+    multiplier: number;
+    status: 'waiting' | 'playing' | 'crashed' | 'cashed';
+    countdown: number | null;
 };
 
-const FlightDisplayScreen = ({
-    status = 'idle',
-    runId = 0,
-}: FlightDisplayScreenProps) => {
-    const backgroundTranslateX = useSharedValue(0);
+const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScreenProps) => {
+
     const flightProgress = useSharedValue(0);
+
+    const backgroundTranslateX = useSharedValue(0);
+
+    const skySpeed = useSharedValue(1);
+
+    const planeImage = (() => {
+
+        switch (status) {
+
+            case 'playing':
+                return PLANE_IMAGES.flying;
+
+            case 'crashed':
+                return PLANE_IMAGES.exploded;
+
+            default:
+                return PLANE_IMAGES.idle;
+        }
+
+    })();
+
+    useEffect(() => {
+        if (status !== 'playing') return;
+
+        const speed =
+            multiplier <= 3
+                ? 1
+                : Math.min(5, multiplier / 5);
+
+        skySpeed.value = withTiming(speed, {
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+        });
+    }, [multiplier, skySpeed, status]);
+
 
     useEffect(() => {
         cancelAnimation(backgroundTranslateX);
         cancelAnimation(flightProgress);
 
-        if (status === 'flying') {
+        if (status === 'playing') {
             backgroundTranslateX.value = 0;
             flightProgress.value = 0;
 
@@ -73,7 +105,7 @@ const FlightDisplayScreen = ({
             };
         }
 
-        if (status === 'idle') {
+        if (status === 'waiting') {
             backgroundTranslateX.value = withTiming(0, {
                 duration: RETURN_DURATION,
                 easing: Easing.out(Easing.ease),
@@ -89,7 +121,7 @@ const FlightDisplayScreen = ({
             cancelAnimation(backgroundTranslateX);
             cancelAnimation(flightProgress);
         };
-    }, [backgroundTranslateX, flightProgress, runId, status]);
+    }, [backgroundTranslateX, flightProgress, status]);
 
     const animatedBackgroundStyle = useAnimatedStyle(() => {
         return {
@@ -102,6 +134,7 @@ const FlightDisplayScreen = ({
     });
 
     const animatedPlaneStyle = useAnimatedStyle(() => {
+
         const translateX = interpolate(
             flightProgress.value,
             [0, 1],
@@ -166,7 +199,7 @@ const FlightDisplayScreen = ({
 
             <Animated.View style={animatedPlaneStyle}>
                 <Image
-                    source={PLANE_IMAGES[status]}
+                    source={planeImage}
                     contentFit="contain"
                     style={{
                         width: PLANE_WIDTH,
@@ -175,9 +208,19 @@ const FlightDisplayScreen = ({
                 />
             </Animated.View>
 
-            {/*Time counter and odds display*/}
-            <View className="w-28 h-28 bg-slate-500/50 rounded-full right-0 bottom-0 items-center justify-center absolute">
-                <Text className="text-4xl font-bold">4</Text>
+            {/*Time counter and odds multiplier display*/}
+            <View
+                className="w-28 h-28 bg-slate-500/50 rounded-full right-0 bottom-0 items-center justify-center absolute">
+                {status === 'waiting' ?
+                    <Text className="text-4xl font-bold">
+                        {countdown}
+                    </Text>
+                    :
+                    <Text className="text-4xl font-bold">
+                        {multiplier.toFixed(2)}x
+                    </Text>}
+
+
             </View>
         </View>
     );
