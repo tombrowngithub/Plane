@@ -3,14 +3,44 @@ import {Image} from 'expo-image'
 import React from 'react'
 import {MaterialIcons} from "@expo/vector-icons";
 
-const crashHistory = [1.22, 2.60, 1.60, 54.12, 2.81, 10.72, 1.23, 5.44, 5.86, 3.21, 2.22, 1.02, 100.30]
-const balance = 5000
+
+
+const getCrashStyles = (value: number) => {
+
+    if (value < 2) {
+        return {
+            text: 'text-rose-600',
+            bg: 'bg-rose-50',
+        };
+    }
+
+    if (value < 6) {
+        return {
+            text: 'text-amber-600',
+            bg: 'bg-amber-50',
+        };
+    }
+
+    if (value < 21) {
+        return {
+            text: 'text-emerald-600',
+            bg: 'bg-emerald-50',
+        };
+    }
+
+    return {
+        text: 'text-violet-600',
+        bg: 'bg-violet-50',
+    };
+};
 
 type HeaderProps = {
     onMenuPress: () => void;
+    crashHistory: number[];
+    balance: number;
 }
 
-const Header = ({onMenuPress}: HeaderProps) => {
+const Header = ({onMenuPress, crashHistory, balance}: HeaderProps) => {
     return (
 
             <View className="w-full px-3">
@@ -32,11 +62,21 @@ const Header = ({onMenuPress}: HeaderProps) => {
                 <View>
                     <FlatList
                         data={crashHistory}
-                        renderItem={({item}) => (
-                            <Text style={{elevation: 0.5}} className="bg-slate-100 text-slate-700 mr-2 p-2 rounded-lg text-sm">{item}x</Text>
-                        )}
                         horizontal
                         showsHorizontalScrollIndicator={false}
+
+                        renderItem={({item}) => {
+
+                            const styles = getCrashStyles(item);
+
+                            return (
+                                <Text
+                                    className={`${styles.bg} ${styles.text} mr-2 px-3 py-2 rounded-lg text-sm font-bold`}
+                                >
+                                    {item.toFixed(2)}x
+                                </Text>
+                            );
+                        }}
                     />
                 </View>
             </View>

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Dimensions, View, Text} from 'react-native';
 import {Image} from 'expo-image';
 
@@ -21,7 +21,7 @@ const PLANE_START_X = -15;
 const PLANE_START_Y = DISPLAY_HEIGHT - PLANE_HEIGHT + 20;
 const PLANE_END_X = SCREEN_WIDTH - PLANE_WIDTH;
 const PLANE_END_Y = 20;
-const BACKGROUND_LOOP_DURATION = 2500;
+const BACKGROUND_LOOP_DURATION = 2500; //I need to find a way to increase the speed when odds are above 3, from this 2500 down to 500
 const FLIGHT_DURATION = 6000;
 const RETURN_DURATION = 100;
 
@@ -44,7 +44,9 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
 
     const backgroundTranslateX = useSharedValue(0);
 
-    const skySpeed = useSharedValue(1);
+
+
+
 
     const planeImage = (() => {
 
@@ -61,20 +63,6 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
         }
 
     })();
-
-    useEffect(() => {
-        if (status !== 'playing') return;
-
-        const speed =
-            multiplier <= 3
-                ? 1
-                : Math.min(5, multiplier / 5);
-
-        skySpeed.value = withTiming(speed, {
-            duration: 300,
-            easing: Easing.out(Easing.ease),
-        });
-    }, [multiplier, skySpeed, status]);
 
 
     useEffect(() => {
@@ -98,6 +86,7 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
                 duration: FLIGHT_DURATION,
                 easing: Easing.out(Easing.ease),
             });
+
 
             return () => {
                 cancelAnimation(backgroundTranslateX);

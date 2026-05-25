@@ -119,6 +119,11 @@ const SideBar = ({visible, onClose}: SideBarProps) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
+                        <MaterialIcons name="history" size={25} color="#334155"/>
+                        <Text className="text-gray-600 ml-1 font-semibold">History</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
                         <MaterialIcons name="settings" size={25} color="#334155"/>
                         <Text className="text-gray-600 ml-1 font-semibold">Account Settings</Text>
                     </TouchableOpacity>
