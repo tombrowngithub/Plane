@@ -10,12 +10,15 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons'; // or your icon library
+import { MaterialIcons } from '@expo/vector-icons';
 
 interface CustomModalProps {
     visible: boolean;
     onClose: () => void;
     onPlaceBet: (betData: BetData) => void;
+
+    setAutobet?: (autobet: any) => void;
+    autobet?: any;
 }
 
 interface BetData {

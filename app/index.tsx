@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Text, TextInput, TouchableOpacity, View, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Header from "@/components/Header";
@@ -8,21 +8,42 @@ import GameStats from "@/components/GameStats";
 import FlightDisplayScreen from "@/components/FlightDisplayScreen";
 import SideBar from "@/components/SideBar";
 import {GameState} from "@/types/game";
+import {AutoBet, BetState} from "@/types/autobet";
+import {getNextBetAmount, shouldStopAutobet} from "@/utils/autobet";
 import {socket} from '@/services/socket';
+
+type BetNumber = 1 | 2;
+
+const createInitialAutobet = (): AutoBet => ({
+    enabled: false,
+
+    baseBet: 0,
+    currentBet: 0,
+
+    maxStake: 0,
+    autoCashout: 0,
+
+    onWinAction: 'back_to_base',
+    onLoseAction: 'back_to_base',
+
+    waitingNextRound: false,
+});
 
 
 const Index = () => {
+
     const [showAutoplayModal, setShowAutoplayModal] = useState(false);
+    const [autoplayTarget, setAutoplayTarget] = useState<BetNumber>(1);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [balance, setBalance] = useState(5000);
-    const [bet1, setBet1] = useState({
+    const [bet1, setBet1] = useState<BetState>({
         amount: '',
         placed: false,
         cashedOut: false,
         profit: 0,
     });
 
-    const [bet2, setBet2] = useState({
+    const [bet2, setBet2] = useState<BetState>({
         amount: '',
         placed: false,
         cashedOut: false,
@@ -37,8 +58,18 @@ const Index = () => {
         cashoutMultiplier: null,
     });
 
+    // Each bet panel owns its own autoplay settings and next-stake progression.
+    const [autobet1, setAutobet1] = useState<AutoBet>(createInitialAutobet);
+    const [autobet2, setAutobet2] = useState<AutoBet>(createInitialAutobet);
+
 
     const [crashHistory, setCrashHistory] = useState<number[]>([]);
+
+    // Prevents the same bet from paying out twice while React state updates are still pending.
+    const cashoutInProgressRef = useRef<Record<1 | 2, boolean>>({
+        1: false,
+        2: false,
+    });
 
     useEffect(() => {
 
@@ -51,10 +82,35 @@ const Index = () => {
                 multiplier,
                 status: 'playing',
             }));
+
+
+            if (
+                autobet1.enabled &&
+                bet1.placed &&
+                !bet1.cashedOut &&
+                autobet1.autoCashout > 0 &&
+                multiplier >= autobet1.autoCashout
+            ) {
+
+                // Bet 1 autobet must settle at the selected target, not the previous React state multiplier.
+                cashOut(1, autobet1.autoCashout);
+            }
+
+            if (
+                autobet2.enabled &&
+                bet2.placed &&
+                !bet2.cashedOut &&
+                autobet2.autoCashout > 0 &&
+                multiplier >= autobet2.autoCashout
+            ) {
+
+                // Bet 2 uses the same exact-multiplier cashout flow as bet 1.
+                cashOut(2, autobet2.autoCashout);
+            }
+
         });
 
         socket.on('crash', (data) => {
-
             const crashPoint = parseFloat(data.crashPoint);
 
             setGameState(prev => ({
@@ -65,15 +121,70 @@ const Index = () => {
             }));
 
             setCrashHistory(prev => [crashPoint, ...prev]);
-            //RESET BET HERE
+
+            if (autobet1.enabled && bet1.placed && !bet1.cashedOut) {
+
+                const nextBet = getNextBetAmount(autobet1, false);
+
+                const stop = shouldStopAutobet(
+                    nextBet,
+                    balance,
+                    autobet1.maxStake
+                );
+
+                if (stop) {
+
+                    setAutobet1(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setAutobet1(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
+            }
+
+            if (autobet2.enabled && bet2.placed && !bet2.cashedOut) {
+
+                const nextBet = getNextBetAmount(autobet2, false);
+
+                const stop = shouldStopAutobet(
+                    nextBet,
+                    balance,
+                    autobet2.maxStake
+                );
+
+                if (stop) {
+
+                    setAutobet2(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setAutobet2(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
+            }
+
+            // Reset bet placed status
             setBet1(prev => ({
                 ...prev,
                 placed: false,
+                cashedOut: false,
             }));
 
             setBet2(prev => ({
                 ...prev,
                 placed: false,
+                cashedOut: false,
             }));
         });
 
@@ -82,7 +193,6 @@ const Index = () => {
         });
 
         socket.on('countdown', (data) => {
-
             setGameState({
                 multiplier: 1,
                 status: 'waiting',
@@ -91,6 +201,67 @@ const Index = () => {
                 cashoutMultiplier: null,
             });
 
+            let availableBalance = balance;
+
+            if (autobet1.enabled && !bet1.placed && gameState.status !== 'playing') {
+
+                const amount = autobet1.currentBet;
+
+                if (availableBalance >= amount) {
+                    availableBalance -= amount;
+
+                    // Each automatic next-round bet must be able to cash out once.
+                    cashoutInProgressRef.current[1] = false;
+
+                    setBalance(prev => prev - amount);
+
+                    setBet1(prev => ({
+                        ...prev,
+                        amount: String(amount),
+                        placed: true,
+                        cashedOut: false,
+                        profit: 0,
+                    }));
+
+                } else {
+
+                    setAutobet1(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+                }
+            }
+
+            if (autobet2.enabled && !bet2.placed && gameState.status !== 'playing') {
+
+                const amount = autobet2.currentBet;
+
+                if (availableBalance >= amount) {
+                    availableBalance -= amount;
+
+                    // Bet 2 gets the same one-cashout reset before automatic placement.
+                    cashoutInProgressRef.current[2] = false;
+
+                    setBalance(prev => prev - amount);
+
+                    setBet2(prev => ({
+                        ...prev,
+                        amount: String(amount),
+                        placed: true,
+                        cashedOut: false,
+                        profit: 0,
+                    }));
+
+                } else {
+
+                    setAutobet2(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+                }
+            }
+
+            // Reset cashout status for next round
             setBet1(prev => ({
                 ...prev,
                 cashedOut: false,
@@ -111,9 +282,9 @@ const Index = () => {
             socket.off('countdown');
         };
 
-    }, []);
+    }, [ autobet1, autobet2, bet1, bet2, balance, gameState.multiplier]);
 
-    const placeBet = (betNumber: 1 | 2) => {
+    const placeBet = (betNumber: BetNumber) => {
 
         const currentBet = betNumber === 1 ? bet1 : bet2;
 
@@ -122,6 +293,9 @@ const Index = () => {
         if (!amount || amount <= 0) return;
 
         if (amount > balance) return;
+
+        // A new placed bet is allowed to cash out once.
+        cashoutInProgressRef.current[betNumber] = false;
 
         setBalance(prev => {
             const newBalance = prev - amount;
@@ -145,27 +319,66 @@ const Index = () => {
         }
     };
 
-    const cashOut = (betNumber: 1 | 2) => {
-
+    const cashOut = (betNumber: BetNumber, cashoutMultiplier = gameState.multiplier) => {
         const currentBet = betNumber === 1 ? bet1 : bet2;
+        const currentAutobet = betNumber === 1 ? autobet1 : autobet2;
+        const setCurrentAutobet = betNumber === 1 ? setAutobet1 : setAutobet2;
 
         if (!currentBet.placed || currentBet.cashedOut) return;
 
+        if (cashoutInProgressRef.current[betNumber]) return;
+
+        // Set this before balance updates so repeated socket ticks cannot pay the same bet twice.
+        cashoutInProgressRef.current[betNumber] = true;
+
         const amount = Number(currentBet.amount);
+        const settledMultiplier = Number(cashoutMultiplier.toFixed(2));
 
-        const profit = amount * gameState.multiplier;
+        // This value is the full payout returned to balance: stake + winnings.
+        const profit = Number((amount * settledMultiplier).toFixed(2));
 
-        socket.emit('cashOut');
+        setGameState(prev => ({
+            ...prev,
+            cashoutMultiplier: settledMultiplier,
+        }));
+
+        // Send the exact client-settled multiplier and bet slot so both panels can cash out in one round.
+        socket.emit('cashOut', {
+            betNumber,
+            multiplier: settledMultiplier.toFixed(2),
+        });
 
         setBalance(prev => prev + profit);
 
         if (betNumber === 1) {
             setBet1(prev => ({
                 ...prev,
-                placed: false,
+                placed: false,  // Bet is settled
                 cashedOut: true,
                 profit,
             }));
+
+            if (currentAutobet.enabled) {
+
+                const nextBet = getNextBetAmount(currentAutobet, true);
+
+                const stop = shouldStopAutobet(nextBet, balance + profit, currentAutobet.maxStake);
+
+                if (stop) {
+
+                    setCurrentAutobet(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setCurrentAutobet(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
+            }
         } else {
             setBet2(prev => ({
                 ...prev,
@@ -173,13 +386,96 @@ const Index = () => {
                 cashedOut: true,
                 profit,
             }));
+
+            if (currentAutobet.enabled) {
+
+                const nextBet = getNextBetAmount(currentAutobet, true);
+
+                const stop = shouldStopAutobet(nextBet, balance + profit, currentAutobet.maxStake);
+
+                if (stop) {
+
+                    setCurrentAutobet(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setCurrentAutobet(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
+            }
         }
     };
 
     const handlePlaceAutobet = (betData: any) => {
-        console.log('Autobet placed:', betData);
-        // Handle the autobet logic here
-        // Example: call your API, update state, etc.
+
+        const baseBet = Number(betData.baseBet);
+        const maxStake = Number(betData.maxStake);
+        const autoCashout = Number(betData.autoCashout);
+        const selectedBetNumber = autoplayTarget;
+        const setSelectedAutobet = selectedBetNumber === 1 ? setAutobet1 : setAutobet2;
+        const setSelectedBet = selectedBetNumber === 1 ? setBet1 : setBet2;
+
+        if (
+            baseBet <= 0 ||
+            maxStake <= 0 ||
+            autoCashout < 1.01
+        ) {
+            return;
+        }
+
+        if (gameState.status === 'waiting' && balance < baseBet) {
+            return;
+        }
+
+        setSelectedAutobet({
+            enabled: true,
+
+            baseBet,
+            currentBet: baseBet,
+            maxStake,
+            autoCashout,
+
+            onWinAction: betData.onWinAction,
+            onLoseAction: betData.onLoseAction,
+
+            waitingNextRound: gameState.status === 'playing',
+        });
+
+        if (gameState.status === 'waiting') {
+
+            // Immediate autobet placement starts a fresh one-cashout cycle for the selected panel.
+            cashoutInProgressRef.current[selectedBetNumber] = false;
+
+            setBalance(prev => prev - baseBet);
+
+            setSelectedBet(prev => ({
+                ...prev,
+                amount: String(baseBet),
+                placed: true,
+                cashedOut: false,
+                profit: 0,
+            }));
+        }
+    };
+
+    const disableAutobet = (betNumber: BetNumber) => {
+        const setSelectedAutobet = betNumber === 1 ? setAutobet1 : setAutobet2;
+
+        setSelectedAutobet(prev => ({
+            ...prev,
+            enabled: false,
+        }));
+    };
+
+    const openAutoplayModal = (betNumber: BetNumber) => {
+        // Remember which bet panel opened the shared modal.
+        setAutoplayTarget(betNumber);
+        setShowAutoplayModal(true);
     };
 
 
@@ -236,7 +532,7 @@ const Index = () => {
                                 />
 
                                 <TouchableOpacity
-                                    onPress={() => setBet2(prev => ({
+                                    onPress={() => setBet1(prev => ({
                                         ...prev,
                                         amount: ""
                                     }))}>
@@ -273,17 +569,30 @@ const Index = () => {
                         <View className="w-[120px] gap-2">
 
                             {/* AUTOPLAY */}
-                            <TouchableOpacity
-                                onPress={() => setShowAutoplayModal(true)}
-                                className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center">
-                                <Text
-                                    numberOfLines={1}
-                                    adjustsFontSizeToFit
-                                    className="text-sky-700 font-bold text-[11px]"
+                            {autobet1.enabled ?
+
+                                <TouchableOpacity
+                                    onPress={() => disableAutobet(1)}
+                                    className="py-[14.5px] rounded-md border border-red-600 items-center justify-center mt-[1.5px]"
                                 >
-                                    ENABLE AUTOPLAY
-                                </Text>
-                            </TouchableOpacity>
+                                    <Text className="text-red-700 font-bold text-[11px]">
+                                        DISABLE AUTOPLAY
+                                    </Text>
+                                </TouchableOpacity>
+                                :
+                                <TouchableOpacity
+                                    onPress={() => openAutoplayModal(1)}
+                                    className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center mt-[1.5px]">
+                                    <Text
+                                        numberOfLines={1}
+                                        adjustsFontSizeToFit
+                                        className="text-sky-700 font-bold text-[11px]"
+                                    >
+                                        ENABLE AUTOPLAY
+                                    </Text>
+                                </TouchableOpacity>
+                            }
+
 
                             {/* PLACE BET {/*Placebet would dynamically serve as cashout button if the user placed a bet and it running* */}
                             <TouchableOpacity
@@ -349,7 +658,7 @@ const Index = () => {
                                 />
 
                                 <TouchableOpacity
-                                    onPress={() => setBet1(prev => ({
+                                    onPress={() => setBet2(prev => ({
                                         ...prev,
                                         amount: ""
                                     }))}>
@@ -386,17 +695,29 @@ const Index = () => {
                         <View className="w-[120px] gap-2">
 
                             {/* AUTOPLAY */}
-                            <TouchableOpacity
-                                onPress={() => setShowAutoplayModal(true)}
-                                className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center">
-                                <Text
-                                    numberOfLines={1}
-                                    adjustsFontSizeToFit
-                                    className="text-sky-700 font-bold text-[11px]"
+                            {autobet2.enabled ?
+
+                                <TouchableOpacity
+                                    onPress={() => disableAutobet(2)}
+                                    className="py-[14.5px] rounded-md border border-red-600 items-center justify-center mt-[1.5px]"
                                 >
-                                    ENABLE AUTOPLAY
-                                </Text>
-                            </TouchableOpacity>
+                                    <Text className="text-red-700 font-bold text-[11px]">
+                                        DISABLE AUTOPLAY
+                                    </Text>
+                                </TouchableOpacity>
+                                :
+                                <TouchableOpacity
+                                    onPress={() => openAutoplayModal(2)}
+                                    className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center mt-[1.5px]">
+                                    <Text
+                                        numberOfLines={1}
+                                        adjustsFontSizeToFit
+                                        className="text-sky-700 font-bold text-[11px]"
+                                    >
+                                        ENABLE AUTOPLAY
+                                    </Text>
+                                </TouchableOpacity>
+                            }
 
                             <TouchableOpacity
                                 onPress={() =>
@@ -434,7 +755,6 @@ const Index = () => {
                                 )}
 
                             </TouchableOpacity>
-
                         </View>
 
                     </View>
@@ -449,6 +769,8 @@ const Index = () => {
             <CustomModal
                 visible={showAutoplayModal}
                 onClose={() => setShowAutoplayModal(false)}
+                setAutobet={autoplayTarget === 1 ? setAutobet1 : setAutobet2}
+                autobet={autoplayTarget === 1 ? autobet1 : autobet2}
                 onPlaceBet={handlePlaceAutobet}
             />
 

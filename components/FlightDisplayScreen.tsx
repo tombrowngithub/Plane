@@ -205,7 +205,7 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
                         {countdown}
                     </Text>
                     :
-                    <Text className="text-4xl font-bold">
+                    <Text className="text-3xl font-bold">
                         {multiplier.toFixed(2)}x
                     </Text>}
 
