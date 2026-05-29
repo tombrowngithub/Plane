@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { AutoBet, BetState } from "@/types/autobet";
+import React, {useEffect, useState} from "react";
+import {AutoBet, BetState} from "@/types/autobet";
 import {getNextBetAmount, shouldStopAutobet} from "@/utils/autobet";
 
 type BetNumber = 1 | 2;
@@ -35,6 +35,9 @@ type Props = {
     cashoutInProgressRef: React.MutableRefObject<Record<1 | 2, boolean>>;
 
     onCashOut: (betNumber: BetNumber, multiplier?: number) => void;
+
+    registerLoss: () => void;
+    registerBet: () => void;
 };
 
 export const useAutobet = ({
@@ -53,6 +56,8 @@ export const useAutobet = ({
                                cashoutInProgressRef,
 
                                onCashOut,
+                               registerLoss,
+                               registerBet
                            }: Props) => {
 
     const [autobet1, setAutobet1] = useState<AutoBet>(createInitialAutobet);
@@ -67,28 +72,14 @@ export const useAutobet = ({
 
     useEffect(() => {
 
-        if (
-            autobet1.enabled &&
-            bet1.placed &&
-            !bet1.cashedOut &&
-            autobet1.autoCashout > 0 &&
-            gameState.multiplier >= autobet1.autoCashout
-        ) {
-
+        if (autobet1.enabled && bet1.placed && !bet1.cashedOut && autobet1.autoCashout > 0 && gameState.multiplier >= autobet1.autoCashout) {
             onCashOut(
                 1,
                 autobet1.autoCashout
             );
         }
 
-        if (
-            autobet2.enabled &&
-            bet2.placed &&
-            !bet2.cashedOut &&
-            autobet2.autoCashout > 0 &&
-            gameState.multiplier >= autobet2.autoCashout
-        ) {
-
+        if (autobet2.enabled && bet2.placed && !bet2.cashedOut && autobet2.autoCashout > 0 && gameState.multiplier >= autobet2.autoCashout) {
             onCashOut(
                 2,
                 autobet2.autoCashout
@@ -125,6 +116,8 @@ export const useAutobet = ({
 
                 cashoutInProgressRef.current[1] = false;
 
+                registerBet();
+
                 setBalance(prev => prev - amount);
 
                 setBet1(prev => ({
@@ -157,10 +150,9 @@ export const useAutobet = ({
 
             if (availableBalance >= amount) {
 
-                availableBalance -= amount;
+                cashoutInProgressRef.current[2] = false;
 
-                cashoutInProgressRef.current[2] =
-                    false;
+                registerBet();
 
                 setBalance(prev => prev - amount);
 
@@ -199,38 +191,36 @@ export const useAutobet = ({
         -------------------------
         */
 
-        if (
-            autobet1.enabled &&
-            bet1.placed &&
-            !bet1.cashedOut
-        ) {
+        if (bet1.placed && !bet1.cashedOut) {
 
-            const nextBet =
-                getNextBetAmount(
-                    autobet1,
-                    false
-                );
+            registerLoss();
 
-            const stop =
-                shouldStopAutobet(
-                    nextBet,
-                    balance,
-                    autobet1.maxStake
-                );
+            if (autobet1.enabled) {
 
-            if (stop) {
+                const nextBet =
+                    getNextBetAmount(autobet1, false);
 
-                setAutobet1(prev => ({
-                    ...prev,
-                    enabled: false,
-                }));
+                const stop =
+                    shouldStopAutobet(
+                        nextBet,
+                        balance,
+                        autobet1.maxStake
+                    );
 
-            } else {
+                if (stop) {
 
-                setAutobet1(prev => ({
-                    ...prev,
-                    currentBet: nextBet,
-                }));
+                    setAutobet1(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setAutobet1(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
             }
         }
 
@@ -240,38 +230,36 @@ export const useAutobet = ({
         -------------------------
         */
 
-        if (
-            autobet2.enabled &&
-            bet2.placed &&
-            !bet2.cashedOut
-        ) {
+        if (bet2.placed && !bet2.cashedOut) {
 
-            const nextBet =
-                getNextBetAmount(
-                    autobet2,
-                    false
-                );
+            registerLoss();
 
-            const stop =
-                shouldStopAutobet(
-                    nextBet,
-                    balance,
-                    autobet2.maxStake
-                );
+            if (autobet2.enabled) {
 
-            if (stop) {
+                const nextBet =
+                    getNextBetAmount(autobet2, false);
 
-                setAutobet2(prev => ({
-                    ...prev,
-                    enabled: false,
-                }));
+                const stop =
+                    shouldStopAutobet(
+                        nextBet,
+                        balance,
+                        autobet2.maxStake
+                    );
 
-            } else {
+                if (stop) {
 
-                setAutobet2(prev => ({
-                    ...prev,
-                    currentBet: nextBet,
-                }));
+                    setAutobet2(prev => ({
+                        ...prev,
+                        enabled: false,
+                    }));
+
+                } else {
+
+                    setAutobet2(prev => ({
+                        ...prev,
+                        currentBet: nextBet,
+                    }));
+                }
             }
         }
 
@@ -301,10 +289,7 @@ export const useAutobet = ({
     ========================================
     */
 
-    const handlePlaceAutobet = (
-        betData: any,
-        selectedBetNumber: BetNumber,
-    ) => {
+    const handlePlaceAutobet = (betData: any, selectedBetNumber: BetNumber) => {
 
         const baseBet =
             Number(betData.baseBet);
@@ -385,9 +370,7 @@ export const useAutobet = ({
         }
     };
 
-    const disableAutobet = (
-        betNumber: BetNumber
-    ) => {
+    const disableAutobet = (betNumber: BetNumber) => {
 
         const setSelectedAutobet =
             betNumber === 1

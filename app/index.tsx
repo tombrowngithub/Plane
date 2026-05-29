@@ -23,6 +23,7 @@ const Index = () => {
 
     const quickAmounts = [10, 50, 100, 200, 500, 1000];
 
+    const startingBalance = 5000;
 
     const {gameState, setGameState, crashHistory,} = useCrashGame();
     const {
@@ -33,8 +34,13 @@ const Index = () => {
         bet2,
         setBet2,
         cashoutInProgressRef,
+
+
         placeBet,
-        cashOut
+        cashOut,
+        registerLoss,
+        stats,
+        registerBet
     } = useBetManager();
 
     const handleCashOut = (betNumber: BetNumber, multiplier = gameState.multiplier) => {
@@ -67,7 +73,9 @@ const Index = () => {
         setBet2,
         setBalance,
         cashoutInProgressRef,
-        onCashOut: handleCashOut
+        onCashOut: handleCashOut,
+        registerLoss,
+        registerBet
     });
 
 
@@ -88,6 +96,10 @@ const Index = () => {
         setAutoplayTarget(betNumber);
         setShowAutoplayModal(true);
     };
+
+    const winRate = stats.totalBets > 0 ? Math.round((stats.totalWins / stats.totalBets) * 100) : 0;
+
+    const profitGrowth = (stats.totalProfit / startingBalance) * 100;
 
 
     const isPlaying = gameState.status === 'playing';
@@ -150,7 +162,14 @@ const Index = () => {
                 </View>
 
                 {/* Log of Total Bets, Wins & Losses */}
-                <GameStats/>
+                <GameStats
+                    totalBets={stats.totalBets}
+                    totalWins={stats.totalWins}
+                    totalLosses={stats.totalLosses}
+                    totalProfit={stats.totalProfit}
+                    winRate={winRate}
+                    profitGrowth={profitGrowth}
+                />
 
             </ScrollView>
 

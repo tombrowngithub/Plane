@@ -3,9 +3,17 @@ import React from 'react'
 import * as Progress from 'react-native-progress';
 import {MaterialIcons} from "@expo/vector-icons";
 
+type Props = {
+    totalBets: number;
+    totalWins: number;
+    totalLosses: number;
+    totalProfit: number;
+    winRate: number;
+    profitGrowth: number;
+};
 
-const GameStats = () => {
-    return (
+
+const GameStats = ({totalBets, totalWins, totalLosses, totalProfit, winRate,profitGrowth}: Props) => {    return (
         <View className="mt-4 rounded-t-xl bg-slate-100 p-4">
 
             {/* Header */}
@@ -37,7 +45,7 @@ const GameStats = () => {
                         </Text>
                     </View>
                     <Text className="text-slate-900 text-2xl font-bold">
-                        124
+                        {totalBets}
                     </Text>
                 </View>
 
@@ -50,7 +58,7 @@ const GameStats = () => {
                         </Text>
                     </View>
                     <Text className="text-emerald-700 text-2xl font-bold">
-                        78
+                        {totalWins}
                     </Text>
                     <View className="absolute top-2 right-2">
                         <MaterialIcons name='arrow-upward' size={13} color='#047857'/>
@@ -66,7 +74,7 @@ const GameStats = () => {
                         </Text>
                     </View>
                     <Text className="text-rose-700 text-2xl font-bold">
-                        46
+                        {totalLosses}
                     </Text>
                     <View className="absolute top-2 right-2">
                         <MaterialIcons name='arrow-downward' size={13} color='#BE123C'/>
@@ -86,18 +94,37 @@ const GameStats = () => {
                             TOTAL PROFIT
                         </Text>
                         <View className="flex-row items-baseline gap-1">
-                            <Text className="text-emerald-700 text-3xl font-bold">
-                                +$12,450
+                            <Text className={`text-3xl font-bold ${
+                                totalProfit >= 0
+                                    ? 'text-emerald-700'
+                                    : 'text-rose-700'
+                            }`}>
+                                {totalProfit >= 0 ? '+' : '-'}
+                                ${Math.abs(totalProfit).toFixed(0)}
                             </Text>
-                            <Text className="text-emerald-600/70 text-xs font-bold ml-1">
-                                ↑ 8.2%
-                            </Text>
+                            <View className="flex-row items-center ml-1 gap-0.5">
+
+                                <MaterialIcons
+                                    name={
+                                    profitGrowth >= 0 ? 'arrow-upward' : 'arrow-downward'}
+                                    size={12}
+                                    color={profitGrowth >= 0 ? '#059669' : '#E11D48'}
+                                />
+
+                                <Text
+                                    className={`text-xs font-bold ${
+                                        profitGrowth >= 0 ? 'text-emerald-600/70' : 'text-rose-600/70'}`}
+                                >
+                                    {Math.abs(profitGrowth).toFixed(1)}%
+                                </Text>
+
+                            </View>
                         </View>
 
                         {/*progress bar*/}
                         <View className="mt-2">
                             <Progress.Bar
-                                progress={0.75}
+                                progress={winRate / 100}
                                 width={null}
                                 height={4}
                                 borderWidth={0}
@@ -121,7 +148,7 @@ const GameStats = () => {
                         </Text>
                         <View className="relative">
                             <Text className="text-slate-900 text-3xl font-bold">
-                                62%
+                                {winRate}%
                             </Text>
                             <View
                                 className="absolute -top-1 -right-6 w-6 h-6 rounded-full items-center justify-center bg-emerald-50">
