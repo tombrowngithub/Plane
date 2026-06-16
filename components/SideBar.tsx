@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Dimensions, Pressable, Text, Touchable, TouchableOpacity, View} from 'react-native';
+import {Dimensions, Pressable, Text, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets}  from "react-native-safe-area-context";
 import {MaterialIcons} from "@expo/vector-icons";
 
@@ -16,9 +16,11 @@ const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.5;
 type SideBarProps = {
     visible: boolean;
     onClose: () => void;
+    isDarkMode: boolean;
+    onToggleDarkMode: () => void;
 };
 
-const SideBar = ({visible, onClose}: SideBarProps) => {
+const SideBar = ({visible, onClose, isDarkMode, onToggleDarkMode}: SideBarProps) => {
 
     const insets = useSafeAreaInsets();
 
@@ -94,38 +96,53 @@ const SideBar = ({visible, onClose}: SideBarProps) => {
                     },
                     sidebarAnimatedStyle,
                 ]}
-                className="bg-slate-100/90 p-5"
+                className={`${isDarkMode ? 'bg-[#252c50]/95' : 'bg-slate-100/90'} p-5`}
             >
 
                 <View style={{paddingTop: insets.top + 20}} className="gap-6">
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="dark-mode" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">Dark Mode</Text>
+                    <TouchableOpacity
+                        onPress={onToggleDarkMode}
+                        className={`flex-row items-center p-2 rounded-lg ${
+                            isDarkMode ? 'bg-sky-500/15' : 'bg-slate-100'
+                        }`}
+                    >
+                        <MaterialIcons
+                            name={isDarkMode ? 'light-mode' : 'dark-mode'}
+                            size={25}
+                            color={isDarkMode ? '#7DD3FC' : '#334155'}
+                        />
+                        <Text
+                            className={`ml-1 font-semibold ${
+                                isDarkMode ? 'text-sky-100' : 'text-gray-600'
+                            }`}
+                        >
+                            {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                        </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="paid" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">Top up</Text>
+                    <TouchableOpacity className={`flex-row items-center p-2 rounded-lg ${isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'}`}>
+                        <MaterialIcons name="paid" size={25} color={isDarkMode ? '#CBD5E1' : '#334155'}/>
+                        <Text className={`${isDarkMode ? 'text-slate-200' : 'text-gray-600'} ml-1 font-semibold`}>Top up</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="output" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">Withdraw</Text>
+                    <TouchableOpacity className={`flex-row items-center p-2 rounded-lg ${isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'}`}>
+                        <MaterialIcons name="output" size={25} color={isDarkMode ? '#CBD5E1' : '#334155'}/>
+                        <Text className={`${isDarkMode ? 'text-slate-200' : 'text-gray-600'} ml-1 font-semibold`}>Withdraw</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="volume-up" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">Sound On</Text>
+                    <TouchableOpacity className={`flex-row items-center p-2 rounded-lg ${isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'}`}>
+                        <MaterialIcons name="volume-up" size={25} color={isDarkMode ? '#CBD5E1' : '#334155'}/>
+                        <Text className={`${isDarkMode ? 'text-slate-200' : 'text-gray-600'} ml-1 font-semibold`}>Sound On</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="history" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">History</Text>
+                    <TouchableOpacity className={`flex-row items-center p-2 rounded-lg ${isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'}`}>
+                        <MaterialIcons name="history" size={25} color={isDarkMode ? '#CBD5E1' : '#334155'}/>
+                        <Text className={`${isDarkMode ? 'text-slate-200' : 'text-gray-600'} ml-1 font-semibold`}>History</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="flex-row items-center p-2 bg-slate-100 rounded-lg">
-                        <MaterialIcons name="settings" size={25} color="#334155"/>
-                        <Text className="text-gray-600 ml-1 font-semibold">Account Settings</Text>
+                    <TouchableOpacity className={`flex-row items-center p-2 rounded-lg ${isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'}`}>
+                        <MaterialIcons name="settings" size={25} color={isDarkMode ? '#CBD5E1' : '#334155'}/>
+                        <Text className={`${isDarkMode ? 'text-slate-200' : 'text-gray-600'} ml-1 font-semibold`}>Account Settings</Text>
                     </TouchableOpacity>
                 </View>
 

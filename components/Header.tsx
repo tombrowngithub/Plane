@@ -5,32 +5,32 @@ import {MaterialIcons} from "@expo/vector-icons";
 
 
 
-const getCrashStyles = (value: number) => {
+const getCrashStyles = (value: number, isDarkMode: boolean) => {
 
     if (value < 2) {
         return {
-            text: 'text-rose-600',
-            bg: 'bg-rose-50',
+            text: isDarkMode ? 'text-rose-300' : 'text-rose-600',
+            bg: isDarkMode ? 'bg-rose-500/15' : 'bg-rose-50',
         };
     }
 
     if (value < 6) {
         return {
-            text: 'text-amber-600',
-            bg: 'bg-amber-50',
+            text: isDarkMode ? 'text-amber-200' : 'text-amber-600',
+            bg: isDarkMode ? 'bg-amber-400/15' : 'bg-amber-50',
         };
     }
 
     if (value < 21) {
         return {
-            text: 'text-emerald-600',
-            bg: 'bg-emerald-50',
+            text: isDarkMode ? 'text-emerald-300' : 'text-emerald-600',
+            bg: isDarkMode ? 'bg-emerald-500/15' : 'bg-emerald-50',
         };
     }
 
     return {
-        text: 'text-violet-600',
-        bg: 'bg-violet-50',
+        text: isDarkMode ? 'text-violet-300' : 'text-violet-600',
+        bg: isDarkMode ? 'bg-violet-500/15' : 'bg-violet-50',
     };
 };
 
@@ -38,24 +38,33 @@ type HeaderProps = {
     onMenuPress: () => void;
     crashHistory: number[];
     balance: number;
+    isDarkMode: boolean;
 }
 
-const Header = ({onMenuPress, crashHistory, balance}: HeaderProps) => {
+const Header = ({onMenuPress, crashHistory, balance, isDarkMode}: HeaderProps) => {
     return (
 
             <View className="w-full px-3">
 
                 <View className="flex-row items-center justify-between py-2">
-                    <Text className="text-slate-800 border-2 py-1 px-3 rounded-lg border-sky-600 bg-white font-semibold">Balance:
+                    <Text
+                        className={`border-2 py-1 px-3 rounded-lg font-semibold ${
+                            isDarkMode
+                                ? 'text-slate-100 border-sky-400 bg-[#252c50]'
+                                : 'text-slate-800 border-sky-600 bg-white'
+                        }`}
+                    >
+                        Balance:
                         ${balance.toLocaleString()}</Text>
 
                     <Image
+                        tintColor={isDarkMode ? "#fff" : ""}
                         style={{width: 150, height: 50, marginRight: 20}}
                         contentFit='contain'
                         source={require("../assets/images/JetplaneLogo.png")}/>
 
                     <TouchableOpacity onPress={onMenuPress}>
-                        <MaterialIcons name="menu" size={30} color="#0F172A"/>
+                        <MaterialIcons name="menu" size={30} color={isDarkMode ? '#E2E8F0' : '#0F172A'}/>
                     </TouchableOpacity>
                 </View>
 
@@ -67,7 +76,7 @@ const Header = ({onMenuPress, crashHistory, balance}: HeaderProps) => {
 
                         renderItem={({item}) => {
 
-                            const styles = getCrashStyles(item);
+                            const styles = getCrashStyles(item, isDarkMode);
 
                             return (
                                 <Text

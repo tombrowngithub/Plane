@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {View, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {StatusBar} from 'expo-status-bar';
 import Header from "@/components/Header";
 import CustomModal from "@/components/CustomModal";
 import GameStats from "@/components/GameStats";
@@ -20,6 +21,7 @@ const Index = () => {
     const [showAutoplayModal, setShowAutoplayModal] = useState(false);
     const [autoplayTarget, setAutoplayTarget] = useState<BetNumber>(1);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     const quickAmounts = [10, 50, 100, 200, 500, 1000];
 
@@ -106,17 +108,28 @@ const Index = () => {
 
 
     return (
-        <SafeAreaView className="flex-1 bg-slate-50">
+        <SafeAreaView className={`flex-1 ${isDarkMode ? 'bg-[#1d2342]' : 'bg-slate-50'}`}>
+
+            <StatusBar
+                style={isDarkMode ? 'light' : 'dark'}
+                backgroundColor={isDarkMode ? '#1d2342' : '#F8FAFC'}
+            />
 
             <Header
                 onMenuPress={() => setIsSidebarOpen(true)}
                 crashHistory={crashHistory}
                 balance={balance}
+                isDarkMode={isDarkMode}
             />
 
             <SideBar
                 visible={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={() => {
+                    setIsDarkMode(prev => !prev);
+                    setIsSidebarOpen(false);
+                }}
             />
 
             {/*Animating flying plane section*/}
@@ -124,6 +137,7 @@ const Index = () => {
                 multiplier={gameState.multiplier}
                 status={gameState.status}
                 countdown={gameState.countdown}
+                isDarkMode={isDarkMode}
             />
 
             <ScrollView
@@ -144,6 +158,7 @@ const Index = () => {
                         onCashOut={() => handleCashOut(1)}
                         onOpenAutoplay={() => openAutoplayModal(1)}
                         onDisableAutoplay={() => disableAutobet(1)}
+                        isDarkMode={isDarkMode}
                     />
 
                     <BetPanel
@@ -158,6 +173,7 @@ const Index = () => {
                         onCashOut={() => handleCashOut(2)}
                         onOpenAutoplay={() => openAutoplayModal(2)}
                         onDisableAutoplay={() => disableAutobet(2)}
+                        isDarkMode={isDarkMode}
                     />
                 </View>
 
@@ -169,6 +185,7 @@ const Index = () => {
                     totalProfit={stats.totalProfit}
                     winRate={winRate}
                     profitGrowth={profitGrowth}
+                    isDarkMode={isDarkMode}
                 />
 
             </ScrollView>
@@ -180,6 +197,7 @@ const Index = () => {
                 autobet={autoplayTarget === 1 ? autobet1 : autobet2}
                 onPlaceBet={(betData) => handlePlaceAutobet(betData, autoplayTarget)
                 }
+                isDarkMode={isDarkMode}
             />
 
         </SafeAreaView>

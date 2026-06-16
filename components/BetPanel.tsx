@@ -21,6 +21,8 @@ type Props = {
 
     onOpenAutoplay: () => void;
     onDisableAutoplay: () => void;
+
+    isDarkMode: boolean;
 };
 
 const BetPanel = ({
@@ -33,18 +35,25 @@ const BetPanel = ({
                       onPlaceBet,
                       onCashOut,
                       onOpenAutoplay,
-                      onDisableAutoplay
+                      onDisableAutoplay,
+                      isDarkMode
                   }: Props) => {
 
 
     return (
-        <View className="w-full flex-row gap-2 rounded-md bg-slate-200 p-2">
+        <View
+            className={`w-full flex-row gap-2 rounded-md p-2 ${
+                isDarkMode
+                    ? 'bg-[#252c50]'
+                    : 'bg-slate-200'
+            }`}
+        >
 
             {/* LEFT SIDE */}
             <View className="flex-1 gap-2">
 
                 {/* INPUT */}
-                <View className="flex-row items-center rounded-md bg-white px-3 py-1">
+                <View className={`flex-row items-center rounded-md px-3 py-1 ${isDarkMode ? 'bg-[#111833]' : 'bg-white'}`}>
                     <TextInput
                         value={bet.amount}
                         onChangeText={(text) =>
@@ -55,8 +64,8 @@ const BetPanel = ({
                         }
                         placeholder="10"
                         keyboardType="numeric"
-                        className="flex-1 text-slate-800 font-semibold"
-                        placeholderTextColor="#64748B"
+                        className={`flex-1 font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}
+                        placeholderTextColor={isDarkMode ? '#94A3B8' : '#64748B'}
                     />
 
                     <TouchableOpacity
@@ -64,7 +73,7 @@ const BetPanel = ({
                             ...prev,
                             amount: ""
                         }))}>
-                        <MaterialIcons name="close" size={18} color="#64748B"/>
+                        <MaterialIcons name="close" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'}/>
                     </TouchableOpacity>
                 </View>
 
@@ -81,9 +90,11 @@ const BetPanel = ({
                                         amount: String(amount),
                                     }))
                                 }
-                                className="w-[31%] rounded py-2 bg-slate-100 items-center"
+                                className={`w-[31%] rounded py-2 items-center ${
+                                    isDarkMode ? 'bg-[#30385f]' : 'bg-slate-100'
+                                }`}
                             >
-                                <Text className="text-slate-700 font-semibold">
+                                <Text className={`${isDarkMode ? 'text-slate-200' : 'text-slate-700'} font-semibold`}>
                                     {amount}
                                 </Text>
                             </TouchableOpacity>
@@ -101,20 +112,24 @@ const BetPanel = ({
 
                     <TouchableOpacity
                         onPress={onDisableAutoplay}
-                        className="py-[14.5px] rounded-md border border-red-600 items-center justify-center"
+                        className={`py-[14.5px] rounded-md border items-center justify-center ${
+                            isDarkMode ? 'border-red-400' : 'border-red-600'
+                        }`}
                     >
-                        <Text className="text-red-700 font-bold text-[11px]">
+                        <Text className={`${isDarkMode ? 'text-red-300' : 'text-red-700'} font-bold text-[11px]`}>
                             DISABLE AUTOPLAY
                         </Text>
                     </TouchableOpacity>
                     :
                     <TouchableOpacity
                         onPress={onOpenAutoplay}
-                        className="py-[14.5px] rounded-md border border-sky-600 items-center justify-center ">
+                        className={`py-[14.5px] rounded-md border items-center justify-center ${
+                            isDarkMode ? 'border-sky-400' : 'border-sky-600'
+                        }`}>
                         <Text
                             numberOfLines={1}
                             adjustsFontSizeToFit
-                            className="text-sky-700 font-bold text-[11px]"
+                            className={`${isDarkMode ? 'text-sky-300' : 'text-sky-700'} font-bold text-[11px]`}
                         >
                             ENABLE AUTOPLAY
                         </Text>
@@ -137,7 +152,7 @@ const BetPanel = ({
                         bet.placed
                             ? 'bg-emerald-600'
                             : isPlaying
-                                ? 'bg-slate-400'
+                                ? isDarkMode ? 'bg-[#47516f]' : 'bg-slate-400'
                                 : 'bg-sky-600'
                     }`}
                 >

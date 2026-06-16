@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import {Dimensions, View, Text} from 'react-native';
 import {Image} from 'expo-image';
 
@@ -36,9 +36,10 @@ type FlightDisplayScreenProps = {
     multiplier: number;
     status: 'waiting' | 'playing' | 'crashed' | 'cashed';
     countdown: number | null;
+    isDarkMode: boolean;
 };
 
-const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScreenProps) => {
+const FlightDisplayScreen = ({multiplier, status, countdown, isDarkMode}: FlightDisplayScreenProps) => {
 
     const flightProgress = useSharedValue(0);
 
@@ -153,7 +154,7 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
     });
 
     return (
-        <View className="w-full h-[200px] mt-4 overflow-hidden bg-sky-100 relative">
+        <View className={`w-full h-[200px] mt-4 overflow-hidden relative ${isDarkMode ? 'bg-[#111833]' : 'bg-sky-100'}`}>
             <Animated.View
                 style={[
                     {
@@ -199,13 +200,15 @@ const FlightDisplayScreen = ({multiplier, status, countdown}: FlightDisplayScree
 
             {/*Time counter and odds multiplier display*/}
             <View
-                className="w-28 h-28 bg-slate-500/50 rounded-full right-0 bottom-0 items-center justify-center absolute">
+                className={`w-28 h-28 rounded-full right-0 bottom-0 items-center justify-center absolute ${
+                    isDarkMode ? 'bg-[#111833]/70' : 'bg-slate-500/50'
+                }`}>
                 {status === 'waiting' ?
-                    <Text className="text-4xl font-bold">
+                    <Text className={`text-4xl font-bold ${isDarkMode ? 'text-slate-50' : 'text-slate-900'}`}>
                         {countdown}
                     </Text>
                     :
-                    <Text className="text-3xl font-bold">
+                    <Text className={`text-3xl font-bold ${isDarkMode ? 'text-slate-50' : 'text-slate-900'}`}>
                         {multiplier.toFixed(2)}x
                     </Text>}
 
