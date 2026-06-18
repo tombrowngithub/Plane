@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { socket } from "@/services/socket";
-import { GameState } from "@/types/game";
+import { CrashHistoryRound, FairnessInfo, GameState } from "@/types/game";
+
+const initialFairnessInfo: FairnessInfo = {
+    roundId: null,
+    serverSeedHash: null,
+    serverSeed: null,
+    clientSeed: null,
+    nonce: null,
+};
+
+const readNumberOrNull = (value: unknown) => {
+    const numberValue = Number(value);
+
+    return Number.isFinite(numberValue) ? numberValue : null;
+};
 
 export const useCrashGame = () => {
 
@@ -13,8 +27,21 @@ export const useCrashGame = () => {
     });
 
     const [crashHistory, setCrashHistory] = useState<number[]>([]);
+    const [fairnessInfo, setFairnessInfo] = useState<FairnessInfo>(initialFairnessInfo);
 
     useEffect(() => {
+
+        socket.on('roundStarted', (data) => {
+
+            // The backend sends only the seed hash before the round, then reveals the seed after crash.
+            setFairnessInfo({
+                roundId: readNumberOrNull(data.roundId),
+                serverSeedHash: data.serverSeedHash ?? null,
+                serverSeed: null,
+                clientSeed: data.clientSeed ?? null,
+                nonce: readNumberOrNull(data.nonce),
+            });
+        });
 
         socket.on('update', (data) => {
 
@@ -38,7 +65,27 @@ export const useCrashGame = () => {
                 crashPoint,
             }));
 
-            setCrashHistory(prev => [crashPoint, ...prev]);
+            setFairnessInfo({
+                roundId: readNumberOrNull(data.roundId),
+                serverSeedHash: data.serverSeedHash ?? null,
+                serverSeed: data.serverSeed ?? null,
+                clientSeed: data.clientSeed ?? null,
+                nonce: readNumberOrNull(data.nonce),
+            });
+        });
+
+        socket.on('history', (data) => {
+
+            const history = Array.isArray(data.history)
+                ? data.history as CrashHistoryRound[]
+                : [];
+
+            // Crash history now comes from the backend, so all connected viewers share the same list.
+            setCrashHistory(
+                history
+                    .map(item => Number(item.crashPoint))
+                    .filter(Number.isFinite)
+            );
         });
 
         socket.on('countdown', (data) => {
@@ -54,8 +101,10 @@ export const useCrashGame = () => {
         });
 
         return () => {
+            socket.off('roundStarted');
             socket.off('update');
             socket.off('crash');
+            socket.off('history');
             socket.off('countdown');
         };
 
@@ -65,5 +114,6 @@ export const useCrashGame = () => {
         gameState,
         setGameState,
         crashHistory,
+        fairnessInfo,
     };
 };

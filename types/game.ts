@@ -7,3 +7,20 @@ export type GameState = {
     crashPoint: number | null;
     cashoutMultiplier: number | null;
 };
+
+export type FairnessInfo = {
+    roundId: number | null;
+    serverSeedHash: string | null;
+    serverSeed: string | null;
+    clientSeed: string | null;
+    nonce: number | null;
+};
+
+export type CrashHistoryRound = {
+    roundId: number;
+    crashPoint: number;
+    serverSeedHash: string;
+    serverSeed: string;
+    clientSeed: string;
+    nonce: number;
+};

@@ -18,3 +18,18 @@ export interface BetState {
     cashedOut: boolean;
     profit: number;
 }
+
+export type BetSettlementResult = {
+    betNumber: 1 | 2;
+    outcome: 'win' | 'loss';
+    amount: number;
+    multiplier?: number;
+    payout?: number;
+    profit?: number;
+};
+
+export type BetSettlement = {
+    id: number;
+    balance: number;
+    results: BetSettlementResult[];
+};

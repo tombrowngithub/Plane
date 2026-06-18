@@ -7,7 +7,6 @@ import CustomModal from "@/components/CustomModal";
 import GameStats from "@/components/GameStats";
 import FlightDisplayScreen from "@/components/FlightDisplayScreen";
 import SideBar from "@/components/SideBar";
-import {socket} from '@/services/socket';
 import BetPanel from "@/components/BetPanel";
 import {useCrashGame} from "@/hooks/useCrashGame";
 import {useBetManager} from "@/hooks/useBetManager";
@@ -30,39 +29,20 @@ const Index = () => {
     const {gameState, setGameState, crashHistory,} = useCrashGame();
     const {
         balance,
-        setBalance,
         bet1,
         setBet1,
         bet2,
         setBet2,
-        cashoutInProgressRef,
-
 
         placeBet,
         cashOut,
-        registerLoss,
         stats,
-        registerBet
+        lastSettlement
     } = useBetManager();
 
-    const handleCashOut = (betNumber: BetNumber, multiplier = gameState.multiplier) => {
+    const handleCashOut = (betNumber: BetNumber) => {
 
-        const result =
-            cashOut(betNumber, multiplier);
-
-        if (!result) return;
-
-        setGameState(prev => ({
-            ...prev,
-            cashoutMultiplier:
-            result.settledMultiplier,
-        }));
-
-        socket.emit('cashOut', {
-            betNumber,
-            multiplier:
-                result.settledMultiplier.toFixed(2),
-        });
+        cashOut(betNumber);
     };
 
 
@@ -73,25 +53,24 @@ const Index = () => {
         bet2,
         setBet1,
         setBet2,
-        setBalance,
-        cashoutInProgressRef,
         onCashOut: handleCashOut,
-        registerLoss,
-        registerBet
+        onPlaceBet: placeBet,
+        lastSettlement
     });
 
 
     useEffect(() => {
 
-        socket.on('cashedOut', (data) => {
-            console.log('Player cashed out at:', data.multiplier);
-        });
+        const win = lastSettlement?.results.find(result => result.outcome === 'win');
 
-        return () => {
-            socket.off('cashedOut');
-        };
+        if (!win || !win.multiplier) return;
 
-    }, [bet1, bet2, balance, gameState.multiplier]);
+        setGameState(prev => ({
+            ...prev,
+            cashoutMultiplier: win.multiplier || null,
+        }));
+
+    }, [lastSettlement, setGameState]);
 
 
     const openAutoplayModal = (betNumber: BetNumber) => {

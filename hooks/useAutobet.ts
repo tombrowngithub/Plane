@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {AutoBet, BetState} from "@/types/autobet";
+import {AutoBet, BetSettlement, BetState} from "@/types/autobet";
 import {getNextBetAmount, shouldStopAutobet} from "@/utils/autobet";
 
 type BetNumber = 1 | 2;
@@ -30,14 +30,10 @@ type Props = {
     setBet1: React.Dispatch<React.SetStateAction<BetState>>;
     setBet2: React.Dispatch<React.SetStateAction<BetState>>;
 
-    setBalance: React.Dispatch<React.SetStateAction<number>>;
-
-    cashoutInProgressRef: React.MutableRefObject<Record<1 | 2, boolean>>;
-
     onCashOut: (betNumber: BetNumber, multiplier?: number) => void;
+    onPlaceBet: (betNumber: BetNumber, amountOverride?: number) => boolean;
 
-    registerLoss: () => void;
-    registerBet: () => void;
+    lastSettlement: BetSettlement | null;
 };
 
 export const useAutobet = ({
@@ -51,13 +47,9 @@ export const useAutobet = ({
                                setBet1,
                                setBet2,
 
-                               setBalance,
-
-                               cashoutInProgressRef,
-
                                onCashOut,
-                               registerLoss,
-                               registerBet
+                               onPlaceBet,
+                               lastSettlement
                            }: Props) => {
 
     const [autobet1, setAutobet1] = useState<AutoBet>(createInitialAutobet);
@@ -74,15 +66,13 @@ export const useAutobet = ({
 
         if (autobet1.enabled && bet1.placed && !bet1.cashedOut && autobet1.autoCashout > 0 && gameState.multiplier >= autobet1.autoCashout) {
             onCashOut(
-                1,
-                autobet1.autoCashout
+                1
             );
         }
 
         if (autobet2.enabled && bet2.placed && !bet2.cashedOut && autobet2.autoCashout > 0 && gameState.multiplier >= autobet2.autoCashout) {
             onCashOut(
-                2,
-                autobet2.autoCashout
+                2
             );
         }
 
@@ -114,19 +104,8 @@ export const useAutobet = ({
 
                 availableBalance -= amount;
 
-                cashoutInProgressRef.current[1] = false;
-
-                registerBet();
-
-                setBalance(prev => prev - amount);
-
-                setBet1(prev => ({
-                    ...prev,
-                    amount: String(amount),
-                    placed: true,
-                    cashedOut: false,
-                    profit: 0,
-                }));
+                // Autoplay goes through the same backend bet acceptance path as manual bets.
+                onPlaceBet(1, amount);
 
             } else {
 
@@ -150,19 +129,10 @@ export const useAutobet = ({
 
             if (availableBalance >= amount) {
 
-                cashoutInProgressRef.current[2] = false;
+                availableBalance -= amount;
 
-                registerBet();
-
-                setBalance(prev => prev - amount);
-
-                setBet2(prev => ({
-                    ...prev,
-                    amount: String(amount),
-                    placed: true,
-                    cashedOut: false,
-                    profit: 0,
-                }));
+                // Autoplay goes through the same backend bet acceptance path as manual bets.
+                onPlaceBet(2, amount);
 
             } else {
 
@@ -177,111 +147,56 @@ export const useAutobet = ({
 
     /*
     ========================================
-    HANDLE CRASHED ROUND
+    HANDLE SERVER BET SETTLEMENT
     ========================================
     */
 
     useEffect(() => {
 
-        if (gameState.status !== 'crashed') return;
+        if (!lastSettlement) return;
 
-        /*
-        -------------------------
-        BET 1 LOSS
-        -------------------------
-        */
+        const updateAutobetAfterSettlement = (
+            setSelectedAutobet: React.Dispatch<React.SetStateAction<AutoBet>>,
+            isWin: boolean
+        ) => {
+            setSelectedAutobet(prev => {
+                if (!prev.enabled) return prev;
 
-        if (bet1.placed && !bet1.cashedOut) {
+                const nextBet = getNextBetAmount(prev, isWin);
 
-            registerLoss();
-
-            if (autobet1.enabled) {
-
-                const nextBet =
-                    getNextBetAmount(autobet1, false);
-
-                const stop =
-                    shouldStopAutobet(
-                        nextBet,
-                        balance,
-                        autobet1.maxStake
-                    );
+                const stop = shouldStopAutobet(
+                    nextBet,
+                    lastSettlement.balance,
+                    prev.maxStake
+                );
 
                 if (stop) {
-
-                    setAutobet1(prev => ({
+                    return {
                         ...prev,
                         enabled: false,
-                    }));
-
-                } else {
-
-                    setAutobet1(prev => ({
-                        ...prev,
-                        currentBet: nextBet,
-                    }));
+                    };
                 }
+
+                return {
+                    ...prev,
+                    currentBet: nextBet,
+                };
+            });
+        };
+
+        lastSettlement.results.forEach(result => {
+            const isWin = result.outcome === 'win';
+
+            if (result.betNumber === 1) {
+                updateAutobetAfterSettlement(setAutobet1, isWin);
             }
-        }
 
-        /*
-        -------------------------
-        BET 2 LOSS
-        -------------------------
-        */
-
-        if (bet2.placed && !bet2.cashedOut) {
-
-            registerLoss();
-
-            if (autobet2.enabled) {
-
-                const nextBet =
-                    getNextBetAmount(autobet2, false);
-
-                const stop =
-                    shouldStopAutobet(
-                        nextBet,
-                        balance,
-                        autobet2.maxStake
-                    );
-
-                if (stop) {
-
-                    setAutobet2(prev => ({
-                        ...prev,
-                        enabled: false,
-                    }));
-
-                } else {
-
-                    setAutobet2(prev => ({
-                        ...prev,
-                        currentBet: nextBet,
-                    }));
-                }
+            if (result.betNumber === 2) {
+                updateAutobetAfterSettlement(setAutobet2, isWin);
             }
-        }
+        });
 
-        /*
-        -------------------------
-        RESET BET STATES
-        -------------------------
-        */
-
-        setBet1(prev => ({
-            ...prev,
-            placed: false,
-            cashedOut: false,
-        }));
-
-        setBet2(prev => ({
-            ...prev,
-            placed: false,
-            cashedOut: false,
-        }));
-
-    }, [gameState.status]);
+    }, [lastSettlement]);
 
     /*
     ========================================
@@ -352,21 +267,13 @@ export const useAutobet = ({
 
         if (gameState.status === 'waiting') {
 
-            cashoutInProgressRef.current[
-                selectedBetNumber
-                ] = false;
-
-            setBalance(prev =>
-                prev - baseBet
-            );
-
+            // Prefill the visible amount, but wait for the backend before marking the bet as placed.
             setSelectedBet(prev => ({
                 ...prev,
                 amount: String(baseBet),
-                placed: true,
-                cashedOut: false,
-                profit: 0,
             }));
+
+            onPlaceBet(selectedBetNumber, baseBet);
         }
     };
 
